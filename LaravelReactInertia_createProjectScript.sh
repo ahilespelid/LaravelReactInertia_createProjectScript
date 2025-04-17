@@ -12,7 +12,7 @@ composer create-project laravel/laravel $PROJECT_NAME
 cd $PROJECT_DIR
 
 # Создаем структуру директорий
-mkdir -p app/Http/Controllers app/Http/Middleware app/Models database/migrations resources/css resources/js/Pages/Auth resources/js/Layouts resources/views routes
+mkdir -p app/Http/Controllers app/Http/Middleware app/Models database/migrations resources/css resources/js/src resources/js/src/pages/auth resources/js/layouts resources/views routes
 
 # Создаем и заполняем файлы
 # 1. app/Models/User.php
@@ -144,7 +144,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return inertia('Welcome');
+    return inertia('Home');
 });
 
 Route::middleware('auth')->group(function () {
@@ -194,13 +194,16 @@ import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 
 createInertiaApp({
-    title: (title) => `${title} - My App`,
-    resolve: (name) =>
-        resolvePageComponent(`./Pages/${name}.tsx`, import.meta.glob('./Pages/**/*.tsx')),
-    setup({ el, App, props }) {
-        const root = createRoot(el);
-        root.render(<App {...props} />);
-    },
+  title: (title) => `${title} - My App`,
+  resolve: (name) =>
+    resolvePageComponent(
+      `./src/pages/${name}.tsx`,
+      import.meta.glob("./src/pages/**/*.tsx")
+    ),
+  setup({ el, App, props }) {
+    const root = createRoot(el);
+    root.render(<App {...props} />);
+  },
 });
 EOF
 
@@ -229,8 +232,8 @@ export interface PageProps {
 }
 EOF
 
-# 10. resources/js/Layouts/AuthenticatedLayout.tsx
-cat << 'EOF' > resources/js/Layouts/AuthenticatedLayout.tsx
+# 10. resources/js/src/layouts/AuthenticatedLayout.tsx
+cat << 'EOF' > resources/js/src/layouts/AuthenticatedLayout.tsx
 import React, { ReactNode } from 'react';
 import { User } from '@/types';
 
@@ -263,65 +266,6 @@ export default function AuthenticatedLayout({ user, header, children }: Props) {
 }
 EOF
 
-# 11. resources/js/Pages/Dashboard.tsx
-cat << 'EOF' > resources/js/Pages/Dashboard.tsx
-import React from 'react';
-import { Head, usePage } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { PageProps } from '@/types';
-
-export default function Dashboard() {
-    const { auth } = usePage<PageProps>().props;
-
-    return (
-        <AuthenticatedLayout user={auth.user!} header={<h2 className="font-semibold text-xl text-gray-800">Дашборд</h2>}>
-            <Head title="Дашборд" />
-            <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div className="p-6 text-gray-900">
-                            Привет, {auth.user!.name}! Вы вошли в систему.
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </AuthenticatedLayout>
-    );
-}
-EOF
-
-# 12. resources/js/Pages/Auth/VerifyEmail.tsx
-cat << 'EOF' > resources/js/Pages/Auth/VerifyEmail.tsx
-import React from 'react';
-import { Head, usePage, Link } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { PageProps } from '@/types';
-
-export default function VerifyEmail() {
-    const { auth } = usePage<PageProps>().props;
-
-    return (
-        <AuthenticatedLayout user={auth.user!} header={<h2 className="font-semibold text-xl text-gray-800">Подтверждение email</h2>}>
-            <Head title="Подтверждение email" />
-            <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 py-12">
-                <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                    <p className="mb-4">
-                        Прежде чем продолжить, подтвердите ваш email. Мы отправили вам письмо с ссылкой для подтверждения.
-                    </p>
-                    <Link
-                        href={route('verification.send')}
-                        method="post"
-                        as="button"
-                        className="text-blue-600 hover:underline"
-                    >
-                        Отправить письмо повторно
-                    </Link>
-                </div>
-            </div>
-        </AuthenticatedLayout>
-    );
-}
-EOF
 
 # 13. resources/css/app.css
 cat << 'EOF' > resources/css/app.css
@@ -497,13 +441,40 @@ export default defineConfig({
   resolve: {
     extensions: [".js", ".ts", ".jsx", ".tsx"], 
     alias: {
-      "@": path.resolve(__dirname, 'resources/js'),
+      "@": path.resolve(__dirname, 'resources/js/src'),
     },
   },
 });
 EOF
 
-# 19. vite.config.js
+# 19. tailwind.config.js
+cat << 'EOF' > vite.config.ts
+import defaultTheme from "tailwindcss/defaultTheme";
+import forms from "@tailwindcss/forms";
+
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php",
+    "./storage/framework/views/*.php",
+    "./resources/views/**/*.blade.php",
+    "./resources/js/**/*.jsx",
+    "./resources/js/**/*.tsx",
+  ],
+
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ["Figtree", ...defaultTheme.fontFamily.sans],
+      },
+    },
+  },
+
+  plugins: [forms],
+};
+EOF
+
+# 20. vite.config.js
 rm -f vite.config.js 
 cat << 'EOF' > vite.config
 import { defineConfig } from 'vite';
@@ -519,6 +490,110 @@ export default defineConfig({
         react(),
     ],
 });
+EOF
+
+# 21. resources/js/src/pages/auth/Login.tsx
+cat << 'EOF' > resources/js/src/layouts/AuthenticatedLayout.tsx
+import React from 'react';
+import { Head } from '@inertiajs/react';
+
+export default function Login() {
+
+    return (
+      <>
+        <Head title="Авторизация" />
+        <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 py-12">
+          <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+            <form class="max-w-sm mx-auto">
+              <div class="mb-5">
+                <label
+                  for="email"
+                  class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                >
+                  Your email
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                  placeholder="name@flowbite.com"
+                  required
+                />
+              </div>
+              <div class="mb-5">
+                <label
+                  for="password"
+                  class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                >
+                  Your password
+                </label>
+                <input
+                  type="password"
+                  id="password"
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                  required
+                />
+              </div>
+              <div class="flex items-start mb-5">
+                <div class="flex items-center h-5">
+                  <input
+                    id="remember"
+                    type="checkbox"
+                    value=""
+                    class="w-4 h-4 border border-gray-300 rounded-sm bg-gray-50 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800"
+                    required
+                  />
+                </div>
+                <label
+                  for="remember"
+                  class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                >
+                  Remember me
+                </label>
+              </div>
+              <button
+                type="submit"
+                class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+              >
+                Submit
+              </button>
+            </form>
+          </div>
+        </div>
+      </>
+    );
+}
+EOF
+
+# 21. resources/js/src/pages/auth/Login.tsx
+cat << 'EOF' > resources/js/src/pages/Home.tsx
+import React from "react";
+import { Head, usePage } from "@inertiajs/react";
+import AuthenticatedLayout from "@/layouts/AuthenticatedLayout";
+import { PageProps } from "@/types";
+
+export default function Home() {
+  const { auth } = usePage<PageProps>().props;
+
+  return (
+    <AuthenticatedLayout
+      user={auth?.user!}
+      header={<h2 className="font-semibold text-xl text-gray-800">Добро пожаловать</h2>}
+    >
+      <Head title="Дашборд" />
+      <div className="py-12">
+        <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+          <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+            <div className="p-6 text-gray-900">
+              Привет, {auth?.user!.name}! Вы вошли в систему.
+            </div>
+          </div>
+        </div>
+      </div>
+    </AuthenticatedLayout>
+  );
+}
+x
 EOF
 
 chmod -R 755 $PROJECT_DIR;
