@@ -150,7 +150,7 @@ Route::get('/', function () {
 });
 
 Route::get('/login', function () {
-    return inertia('auth/Login');
+    return inertia('Auth/Login');
 });
 
 Route::middleware('login')->group(function () {
