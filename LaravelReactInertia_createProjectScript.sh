@@ -79,6 +79,27 @@ class HandleInertiaRequests extends Middleware
 }
 EOF
 
+cat << 'EOF' > app/Http/Middleware/Login.php
+<?php
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+class Login
+{
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     */
+    public function handle(Request $request, Closure $next): Response {
+        return (auth()->check()) ? $next($request) : redirect('login');
+    }
+}
+EOF
+
 # 4. database/migrations/2014_10_12_000000_create_users_table.php
 cat << 'EOF' > database/migrations/2014_10_12_000000_create_users_table.php
 <?php
