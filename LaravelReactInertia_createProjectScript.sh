@@ -375,6 +375,7 @@ cat << 'EOF' > package.json
     "axios": "^1.6.5",
     "laravel-vite-plugin": "^1.0.0",
     "postcss": "^8.4.35",
+    "@tailwindcss/forms": "^0.5.3",
     "tailwindcss": "^3.4.0",
     "typescript": "^5.3.3",
     "vite": "^5.1.4",
