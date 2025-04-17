@@ -640,6 +640,7 @@ php artisan key:generate;
 php artisan db:wipe;
 php artisan migrate;
 php artisan breeze:install react;
+rm -f vite.config.js;
 #npm run build --verbose; 
 
 # Выводим сообщение об успешном создании
