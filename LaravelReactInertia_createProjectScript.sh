@@ -639,7 +639,8 @@ npm install;
 php artisan key:generate;
 php artisan db:wipe;
 php artisan migrate;
-npm run build --verbose; 
+php artisan breeze:install react;
+#npm run build --verbose; 
 
 # Выводим сообщение об успешном создании
 echo "Проект успешно создан в директории '$PROJECT_DIR'!"
