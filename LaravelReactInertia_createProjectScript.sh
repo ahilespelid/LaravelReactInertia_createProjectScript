@@ -12,7 +12,7 @@ composer create-project laravel/laravel $PROJECT_NAME
 cd $PROJECT_DIR
 
 # Создаем структуру директорий
-mkdir -p app/Http/Controllers app/Http/Middleware app/Models database/migrations resources/css resources/js/src resources/js/src/pages/auth resources/js/layouts resources/views routes bootstrap
+mkdir -p app/Http/Controllers app/Http/Middleware app/Models database/migrations resources/css resources/js/src resources/js/src/pages/auth resources/js/src/layouts resources/views routes bootstrap
 
 # Создаем и заполняем файлы
 # 1. app/Models/User.php
@@ -498,7 +498,7 @@ export default defineConfig({
 EOF
 
 # 21. resources/js/src/pages/auth/Login.tsx
-cat << 'EOF' > resources/js/src/layouts/AuthenticatedLayout.tsx
+cat << 'EOF' > resources/js/src/layouts/Login.tsx
 import React from 'react';
 import { Head } from '@inertiajs/react';
 
@@ -570,7 +570,7 @@ export default function Login() {
 }
 EOF
 
-# 21. resources/js/src/pages/auth/Login.tsx
+# 21. resources/js/src/pages/auth/Home.tsx
 cat << 'EOF' > resources/js/src/pages/Home.tsx
 import React from "react";
 import { Head, usePage } from "@inertiajs/react";
