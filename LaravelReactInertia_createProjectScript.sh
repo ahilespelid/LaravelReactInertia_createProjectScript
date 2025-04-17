@@ -14,7 +14,7 @@ php artisan breeze:install react;
 rm -f vite.config.js;
 
 # Создаем структуру директорий
-mkdir -p app/Http/Controllers app/Http/Middleware app/Models database/migrations resources/css resources/js/src resources/js/src/pages/auth resources/js/src/layouts resources/views routes bootstrap
+mkdir -p app/Http/Controllers app/Http/Middleware app/Models database/migrations resources/css resources/js/src resources/js/src/pages/Auth resources/js/src/layouts resources/views routes bootstrap
 
 # Создаем и заполняем файлы
 # 1. app/Models/User.php
@@ -500,7 +500,7 @@ export default defineConfig({
 EOF
 
 # 21. resources/js/src/pages/auth/Login.tsx
-cat << 'EOF' > resources/js/src/pages/auth/Login.tsx
+cat << 'EOF' > resources/js/src/pages/Auth/Login.tsx
 import React from 'react';
 import { Head } from '@inertiajs/react';
 
@@ -572,7 +572,7 @@ export default function Login() {
 }
 EOF
 
-# 21. resources/js/src/pages/auth/Home.tsx
+# 21. resources/js/src/pages/Home.tsx
 cat << 'EOF' > resources/js/src/pages/Home.tsx
 import React from "react";
 import { Head, usePage } from "@inertiajs/react";
