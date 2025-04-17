@@ -254,7 +254,7 @@ export default function AuthenticatedLayout({ user, header, children }: Props) {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-16">
                         <div className="flex items-center">
-                            <span>{user.name}</span>
+                            <span>{user?.name}</span>
                         </div>
                     </div>
                 </div>
@@ -498,7 +498,7 @@ export default defineConfig({
 EOF
 
 # 21. resources/js/src/pages/auth/Login.tsx
-cat << 'EOF' > resources/js/src/layouts/Login.tsx
+cat << 'EOF' > resources/js/src/pages/auth/Login.tsx
 import React from 'react';
 import { Head } from '@inertiajs/react';
 
