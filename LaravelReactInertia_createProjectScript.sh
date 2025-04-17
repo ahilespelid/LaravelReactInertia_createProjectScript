@@ -453,7 +453,7 @@ export default defineConfig({
 EOF
 
 # 19. tailwind.config.js
-cat << 'EOF' > vite.config.ts
+cat << 'EOF' > tailwind.config.ts
 import defaultTheme from "tailwindcss/defaultTheme";
 import forms from "@tailwindcss/forms";
 
@@ -639,7 +639,7 @@ npm install;
 php artisan key:generate;
 php artisan db:wipe;
 php artisan migrate;
-npm run build; 
+npm run build --verbose; 
 
 # Выводим сообщение об успешном создании
 echo "Проект успешно создан в директории '$PROJECT_DIR'!"
