@@ -12,7 +12,7 @@ composer create-project laravel/laravel $PROJECT_NAME
 cd $PROJECT_DIR
 
 # Создаем структуру директорий
-mkdir -p app/Http/Controllers app/Http/Middleware app/Models database/migrations resources/css resources/js/src resources/js/src/pages/auth resources/js/layouts resources/views routes
+mkdir -p app/Http/Controllers app/Http/Middleware app/Models database/migrations resources/css resources/js/src resources/js/src/pages/auth resources/js/layouts resources/views routes bootstrap
 
 # Создаем и заполняем файлы
 # 1. app/Models/User.php
@@ -147,7 +147,11 @@ Route::get('/', function () {
     return inertia('Home');
 });
 
-Route::middleware('auth')->group(function () {
+Route::get('/login', function () {
+    return inertia('auth/Login');
+});
+
+Route::middleware('login')->group(function () {
     Route::get('/user', [UserController::class, 'index'])->middleware('verified')->name('user');
 
     Route::get('/email/verify', function () {
@@ -593,7 +597,34 @@ export default function Home() {
     </AuthenticatedLayout>
   );
 }
-x
+EOF
+
+# 22. bootstrap/app.php
+cat << 'EOF' > bootstrap/app.php
+<?php
+use App\Http\Middleware\Login;
+
+use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Configuration\Exceptions;
+use Illuminate\Foundation\Configuration\Middleware;
+
+return Application::configure(basePath: dirname(__DIR__))
+    ->withRouting(
+        web: __DIR__.'/../routes/web.php',
+        commands: __DIR__.'/../routes/console.php',
+        health: '/up',
+    )
+    ->withMiddleware(function (Middleware $middleware) {
+        $middleware->web(append: [
+        //
+        ]);
+        $middleware->group('login', [
+            Login::class,
+        ]);
+    })
+    ->withExceptions(function (Exceptions $exceptions) {
+        //
+    })->create();
 EOF
 
 chmod -R 755 $PROJECT_DIR;
@@ -619,4 +650,4 @@ echo "  php artisan key:generate"
 echo "  php artisan migrate"
 # echo "  php artisan serve"
 echo "  npm run build"
-echo "Не забудьте обновить .env с вашими настройками базы данных и SMTP! Так же не забудьте добавить \App\Http\Middleware\Login::class в bootstrap/app.php"
+echo "Не забудьте обновить .env с вашими настройками базы данных и SMTP!"
