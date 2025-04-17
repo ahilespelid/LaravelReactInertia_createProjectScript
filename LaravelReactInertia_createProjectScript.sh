@@ -10,6 +10,9 @@ echo $PROJECT_DIR;
 mkdir -p /var/www; cd /var/www;
 composer create-project laravel/laravel $PROJECT_NAME
 cd $PROJECT_DIR
+
+composer require laravel/breeze;
+composer require inertiajs/inertia-laravel;
 php artisan breeze:install react;
 rm -f vite.config.js;
 
@@ -352,8 +355,6 @@ VITE_APP_NAME="${APP_NAME}"
 EOF
 
 # 15. composer.json
-composer require laravel/breeze;
-composer require inertiajs/inertia-laravel;
 
 # 16. package.json
 cat << 'EOF' > package.json
