@@ -10,6 +10,8 @@ echo $PROJECT_DIR;
 mkdir -p /var/www; cd /var/www;
 composer create-project laravel/laravel $PROJECT_NAME
 cd $PROJECT_DIR
+php artisan breeze:install react;
+rm -f vite.config.js;
 
 # Создаем структуру директорий
 mkdir -p app/Http/Controllers app/Http/Middleware app/Models database/migrations resources/css resources/js/src resources/js/src/pages/auth resources/js/src/layouts resources/views routes bootstrap
@@ -639,9 +641,7 @@ npm install;
 php artisan key:generate;
 php artisan db:wipe;
 php artisan migrate;
-php artisan breeze:install react;
-rm -f vite.config.js;
-#npm run build --verbose; 
+npm run build --verbose; 
 
 # Выводим сообщение об успешном создании
 echo "Проект успешно создан в директории '$PROJECT_DIR'!"
