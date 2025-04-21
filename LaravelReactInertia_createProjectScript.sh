@@ -17,7 +17,7 @@ php artisan breeze:install react;
 rm -f vite.config.js;
 
 # Создаем структуру директорий
-mkdir -p app/Http/Controllers app/Http/Middleware app/Http/Requests/Auth app/Models database/migrations resources/css resources/js/src resources/js/src/pages/Auth resources/js/src/layouts resources/views routes bootstrap
+mkdir -p app/Http/Controllers app/Http/Controllers/Auth app/Http/Middleware app/Http/Requests/Auth app/Models database/migrations resources/css resources/js/src resources/js/src/pages/Auth resources/js/src/layouts resources/views routes bootstrap
 
 # Создаем и заполняем файлы
 # 1. app/Models/User.php
@@ -42,6 +42,61 @@ class User extends Authenticatable implements MustVerifyEmail
         'updated_at'            => 'datetime',
         'created_at'            => 'datetime'
     ];
+}
+EOF
+cat << 'EOF' > app/Http/Controllers/Auth/AuthenticatedSessionController.php
+<?php
+
+namespace App\Http\Controllers\Auth;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\LoginRequest;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class AuthenticatedSessionController extends Controller
+{
+    /**
+     * Display the login view.
+     */
+    public function create(): Response
+    {
+        return Inertia::render('Auth/Login', [
+            'csrf_token'       => csrf_token(),
+            'canResetPassword' => Route::has('password.request'),
+            'status' => session('status'),
+        ]);
+    }
+
+    /**
+     * Handle an incoming authentication request.
+     */
+    public function store(LoginRequest $request): RedirectResponse
+    {
+        $request->authenticate();
+
+        $request->session()->regenerate();
+
+        return redirect()->intended(route('home', absolute: false));
+    }
+
+    /**
+     * Destroy an authenticated session.
+     */
+    public function destroy(Request $request): RedirectResponse
+    {
+        Auth::guard('web')->logout();
+
+        $request->session()->invalidate();
+
+        $request->session()->regenerateToken();
+
+        return redirect('/');
+    }
 }
 EOF
 
@@ -241,7 +296,7 @@ Route::get('/login', function () {
 });
 
 Route::middleware('login')->group(function () {
-    Route::get('/', fn() => inertia('Home'));
+    Route::get('/', fn() => inertia('Home'))->name('home');
     Route::get('/user', [UserController::class, 'index'])->middleware('verified')->name('user');
 
     Route::get('/email/verify', fn() => inertia('Auth/VerifyEmail'))->name('verification.notice');
