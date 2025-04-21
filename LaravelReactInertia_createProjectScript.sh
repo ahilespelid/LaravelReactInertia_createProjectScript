@@ -17,7 +17,7 @@ php artisan breeze:install react;
 rm -f vite.config.js;
 
 # Создаем структуру директорий
-mkdir -p app/Http/Controllers app/Http/Middleware app/Models database/migrations resources/css resources/js/src resources/js/src/pages/Auth resources/js/src/layouts resources/views routes bootstrap
+mkdir -p app/Http/Controllers app/Http/Middleware app/Http/Requests/Auth app/Models database/migrations resources/css resources/js/src resources/js/src/pages/Auth resources/js/src/layouts resources/views routes bootstrap
 
 # Создаем и заполняем файлы
 # 1. app/Models/User.php
@@ -105,6 +105,94 @@ class Login
 }
 EOF
 
+cat << 'EOF' > app/Http/Requests/Auth/LoginRequest.php
+<?php
+
+namespace App\Http\Requests\Auth;
+
+use Illuminate\Auth\Events\Lockout;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
+
+class LoginRequest extends FormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     */
+    public function rules(): array
+    {
+        return [
+            'login' => ['required', 'string'],// 'email'],
+            'password' => ['required', 'string'],
+        ];
+    }
+
+    /**
+     * Attempt to authenticate the request's credentials.
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    public function authenticate(): void
+    {
+        $this->ensureIsNotRateLimited();
+
+        if (! Auth::attempt($this->only('login', 'password'), $this->boolean('remember'))) {
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'login' => trans('auth.failed'),
+            ]);
+        }
+
+        RateLimiter::clear($this->throttleKey());
+    }
+
+    /**
+     * Ensure the login request is not rate limited.
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    public function ensureIsNotRateLimited(): void
+    {
+        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
+            return;
+        }
+
+        event(new Lockout($this));
+
+        $seconds = RateLimiter::availableIn($this->throttleKey());
+
+        throw ValidationException::withMessages([
+            'login' => trans('auth.throttle', [
+                'seconds' => $seconds,
+                'minutes' => ceil($seconds / 60),
+            ]),
+        ]);
+    }
+
+    /**
+     * Get the rate limiting throttle key for the request.
+     */
+    public function throttleKey(): string
+    {
+        return Str::transliterate(Str::lower($this->string('login')).'|'.$this->ip());
+    }
+}
+EOF
+
 # 4. database/migrations/2014_10_12_000000_create_users_table.php
 cat << 'EOF' > database/migrations/2014_10_12_000000_create_users_table.php
 <?php
@@ -148,31 +236,20 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return inertia('Home');
-});
-
 Route::get('/login', function () {
     return inertia('Auth/Login');
 });
 
 Route::middleware('login')->group(function () {
+    Route::get('/', fn() => inertia('Home'));
     Route::get('/user', [UserController::class, 'index'])->middleware('verified')->name('user');
 
-    Route::get('/email/verify', function () {
-        return inertia('Auth/VerifyEmail');
-    })->name('verification.notice');
-
-    Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-        $request->fulfill();
-        return redirect()->route('user');
-    })->middleware('signed')->name('verification.verify');
-
-    Route::post('/email/verification', function (Request $request) {
-        $request->user()->sendEmailVerificationNotification();
-        return back()->with('message', 'Verification link sent!');
-    })->middleware('throttle:6,1')->name('verification.send');
-});
+    Route::get('/email/verify', fn() => inertia('Auth/VerifyEmail'))->name('verification.notice');
+    Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request){$request->fulfill(); return redirect()->route('user');})->middleware('signed')->name('verification.verify');
+    Route::post('/email/verification', function (Request $request){
+        $request->user()->sendEmailVerificationNotification(); return back()->with('message', 'Verification link sent!');})->middleware('throttle:6,1')->name('verification.send');
+    });
+    
 require __DIR__.'/auth.php';
 EOF
 
