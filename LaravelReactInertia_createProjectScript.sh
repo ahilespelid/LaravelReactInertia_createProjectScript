@@ -274,8 +274,13 @@ return new class extends Migration
             $table->timestamp('deleted_at')->nullable();
             $table->timestamps();
         });
+        DB::table('your_table_name')->insert([
+            'login' => 'admin',
+            'password' => bcrypt('admin'),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
-
     public function down(): void
     {
         Schema::dropIfExists('users');
