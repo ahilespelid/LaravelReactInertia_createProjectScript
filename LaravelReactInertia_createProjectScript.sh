@@ -534,7 +534,7 @@ export default defineConfig({
 EOF
 
 # 19. tailwind.config.js
-cat << 'EOF' > tailwind.config.ts
+cat << 'EOF' > tailwind.config.js
 import defaultTheme from "tailwindcss/defaultTheme";
 import forms from "@tailwindcss/forms";
 
@@ -578,12 +578,14 @@ export default defineConfig({
 });
 EOF
 
-# 21. resources/js/src/pages/auth/Login.tsx
+# 21. resources/js/src/pages/Auth/Login.tsx
 cat << 'EOF' > resources/js/src/pages/Auth/Login.tsx
 import React from 'react';
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 
 export default function Login() {
+
+    const { csrf_token, canResetPassword, status } = usePage().props;
 
     return (
       <>
@@ -592,7 +594,7 @@ export default function Login() {
           <div class="relative py-3 sm:max-w-xl sm:mx-auto">
             <div class="absolute inset-0 bg-gradient-to-r from-blue-300 to-blue-600 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl"></div>
             <div class="relative px-4 py-10 bg-white shadow-lg sm:rounded-3xl sm:p-20">
-              <div class="max-w-md mx-auto">
+              <form action="/login" class="max-w-md mx-auto">
                 <div>
                   <h1 class="text-2xl font-semibold">
                     Login Form with Floating Labels
@@ -637,9 +639,10 @@ export default function Login() {
                         Submit
                       </button>
                     </div>
+                    <input type="hidden" name="_token" value={csrf_token} />
                   </div>
                 </div>
-              </div>
+              </form>
             </div>
           </div>
         </div>
